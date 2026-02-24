@@ -36,22 +36,46 @@ function eventToWebRequest(event: any): Request | null {
       });
 
       const method = nodeReq.method || "GET";
-      const body = method === "GET" || method === "HEAD" ? undefined : (nodeReq.body ?? undefined);
+      
+      let body: any = undefined;
+      if (method !== "GET" && method !== "HEAD") {
+        if (nodeReq.body !== undefined && nodeReq.body !== null) {
+          if (typeof nodeReq.body === "string" || nodeReq.body instanceof Buffer || nodeReq.body instanceof Uint8Array) {
+            body = nodeReq.body;
+          } else if (typeof nodeReq.body === "object") {
+            body = JSON.stringify(nodeReq.body);
+          } else {
+            body = nodeReq.body;
+          }
+        } else {
+          // If no parsed body, use the nodeReq stream
+          body = nodeReq;
+        }
+      }
 
       // undici requires `duplex: 'half'` when passing a body stream
       const init: RequestInit = { method, headers, body } as any;
-      if (body) (init as any).duplex = "half";
+      if (body && (typeof body.on === 'function' || typeof body.getReader === 'function')) {
+        (init as any).duplex = "half";
+      }
 
-      return new Request(url, init as RequestInit);
+      return new Request(url, init);
     }
 
     if (event && event.method && event.url) {
       const headers = new Headers(event.headers as any || {});
       const method = event.method;
-      const body = method === "GET" || method === "HEAD" ? undefined : event.body;
+      let body = method === "GET" || method === "HEAD" ? undefined : event.body;
+      
+      if (body && typeof body === 'object' && !(body instanceof Buffer) && !(body instanceof Uint8Array)) {
+        body = JSON.stringify(body);
+      }
+
       const init: RequestInit = { method, headers, body } as any;
-      if (body) (init as any).duplex = "half";
-      return new Request(event.url, init as RequestInit);
+      if (body && (typeof body.on === 'function' || typeof body.getReader === 'function')) {
+        (init as any).duplex = "half";
+      }
+      return new Request(event.url, init);
     }
 
     return null;
@@ -62,26 +86,11 @@ function eventToWebRequest(event: any): Request | null {
 }
 
 export default async function (event: any) {
-  console.log("[client-logs-handler] Handler invoked", { eventType: typeof event, eventKeys: event && typeof event === 'object' ? Object.keys(event) : undefined });
+  console.log("[client-logs-handler] Handler invoked", { method: event?.node?.req?.method || event?.method });
   const request = eventToWebRequest(event);
 
-  if (request) {
-    // Log all headers
-    const headersObj = {};
-    for (const [k, v] of request.headers.entries()) headersObj[k] = v;
-    console.log("[client-logs-handler] Incoming headers:", headersObj);
-    // Log raw body (non-consuming)
-    try {
-      const clone = request.clone();
-      const preview = await clone.text();
-      console.log("[client-logs-handler] Incoming raw body (preview):", preview);
-    } catch (err) {
-      console.warn("[client-logs-handler] Could not preview body", err);
-    }
-  }
-
   if (!request) {
-    console.warn("[client-logs-handler] No request object could be constructed from event", { event });
+    console.warn("[client-logs-handler] No request object could be constructed from event");
     return new Response(JSON.stringify({ ok: false, message: "client-logs handler - no request available" }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -102,24 +111,30 @@ export default async function (event: any) {
     let bodyText = await request.text();
     let body: ClientLogRequest | undefined;
     if (bodyText && bodyText.trim().length > 0) {
-      console.log("[client-logs-handler] Raw request body:", bodyText);
       try {
         body = JSON.parse(bodyText);
       } catch (parseErr) {
-        console.error("[client-logs-handler] Failed to parse JSON body", parseErr);
-        return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+        console.error("[client-logs-handler] Failed to parse JSON body. Body length:", bodyText.length);
+        console.error("[client-logs-handler] First 100 chars of body:", bodyText.substring(0, 100));
+        console.error("[client-logs-handler] Parse error:", parseErr);
+        return new Response(JSON.stringify({ 
+          error: "Invalid JSON", 
+          details: parseErr instanceof Error ? parseErr.message : String(parseErr),
+          receivedLength: bodyText.length
+        }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
         });
       }
     } else {
-      // Try to parse as JSON stream (for fetch, node-fetch, etc.)
+      // Try to parse as JSON from the request directly if text() was empty but it might be a stream
       try {
+        // If text() was empty, it might be because the stream was already consumed or is empty.
+        // We'll try request.json() just in case, though it's unlikely to work if text() didn't.
         body = await request.json();
-        console.log("[client-logs-handler] Parsed JSON body from stream:", body);
       } catch (parseErr) {
-        console.error("[client-logs-handler] Failed to parse JSON body from stream", parseErr);
-        return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+        console.warn("[client-logs-handler] Body is empty or not valid JSON");
+        return new Response(JSON.stringify({ error: "Empty or invalid body" }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
         });

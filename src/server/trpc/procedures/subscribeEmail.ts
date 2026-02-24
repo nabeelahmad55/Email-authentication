@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { db } from "~/server/db";
+import { env } from "~/server/env";
 import { baseProcedure } from "~/server/trpc/main";
 import { submitEmailSubscriberToAirtable } from "~/server/airtable";
 
@@ -15,29 +16,36 @@ export const subscribeEmail = baseProcedure
     let subscriberId: string;
     let createdAt: Date;
     
-    if (db) {
-      // Database is available - check for duplicates and use it
-      const existingSubscriber = await db.emailSubscriber.findUnique({
-        where: {
-          email: input.email,
-        },
-      });
-
-      if (existingSubscriber) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "This email is already subscribed",
+    if (env.DATABASE_URL) {
+      try {
+        // Database is available - check for duplicates and use it
+        const existingSubscriber = await db.emailSubscriber.findUnique({
+          where: {
+            email: input.email,
+          },
         });
-      }
 
-      const subscriber = await db.emailSubscriber.create({
-        data: {
-          email: input.email,
-        },
-      });
-      
-      subscriberId = subscriber.id.toString();
-      createdAt = subscriber.createdAt;
+        if (existingSubscriber) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "This email is already subscribed",
+          });
+        }
+
+        const subscriber = await db.emailSubscriber.create({
+          data: {
+            email: input.email,
+          },
+        });
+        
+        subscriberId = subscriber.id.toString();
+        createdAt = subscriber.createdAt;
+      } catch (dbError) {
+        if (dbError instanceof TRPCError) throw dbError;
+        console.error("Database error in subscribeEmail:", dbError);
+        subscriberId = randomUUID();
+        createdAt = new Date();
+      }
     } else {
       // Database not available - generate UUID and use current timestamp
       // Note: duplicate checking is not available without database

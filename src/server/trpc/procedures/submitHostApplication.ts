@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { db } from "~/server/db";
+import { env } from "~/server/env";
 import { baseProcedure } from "~/server/trpc/main";
 import { submitHostApplicationToAirtable } from "~/server/airtable";
 import { sendHostApplicationThankYouEmail } from "~/server/email";
@@ -45,44 +46,50 @@ export const submitHostApplication = baseProcedure
     let applicationId: string;
     let createdAt: Date;
 
-    if (db) {
-      // Database is available - use it
-      const application = await db.hostApplication.create({
-        data: {
-          // Step 1 - Business Information
-          businessOrPropertyName: input.businessOrPropertyName,
-          propertyType: input.propertyType,
-          propertyWebsiteOrListingLink: input.propertyWebsiteOrListingLink,
-          country: input.country,
+    if (env.DATABASE_URL) {
+      try {
+        // Database is available - use it
+        const application = await db.hostApplication.create({
+          data: {
+            // Step 1 - Business Information
+            businessOrPropertyName: input.businessOrPropertyName,
+            propertyType: input.propertyType,
+            propertyWebsiteOrListingLink: input.propertyWebsiteOrListingLink,
+            country: input.country,
 
-          // Step 2 - Contact Information
-          contactEmail: input.contactEmail,
-          primaryContactFullName: input.primaryContactFullName,
-          phoneNumber: input.phoneNumber,
-          primaryContactRole: input.primaryContactRole,
-          primaryContactOtherRoleDescription: input.otherRoleDescription,
+            // Step 2 - Contact Information
+            contactEmail: input.contactEmail,
+            primaryContactFullName: input.primaryContactFullName,
+            phoneNumber: input.phoneNumber,
+            primaryContactRole: input.primaryContactRole,
+            primaryContactOtherRoleDescription: input.otherRoleDescription,
 
-          // Step 3 - Property Details
-          numberOfRoomsOrUnits: input.numberOfRoomsOrUnits,
-          targetGuestType: input.targetGuestType,
-          amenities: input.amenities,
-          peakSeasons: input.peakSeasons,
+            // Step 3 - Property Details
+            numberOfRoomsOrUnits: input.numberOfRoomsOrUnits,
+            targetGuestType: input.targetGuestType,
+            amenities: input.amenities,
+            peakSeasons: input.peakSeasons,
 
-          // Step 4 - Collaboration Goals
-          collaborationObjectives: input.collaborationObjectives,
-          additionalNotes: input.additionalNotes,
-          previousCreatorExperience: input.previousCreatorExperience,
+            // Step 4 - Collaboration Goals
+            collaborationObjectives: input.collaborationObjectives,
+            additionalNotes: input.additionalNotes,
+            previousCreatorExperience: input.previousCreatorExperience,
 
-          // Confirmations
-          informationAccurate: input.informationAccurate,
-          agreedToTerms: input.agreedToTerms,
+            // Confirmations
+            informationAccurate: input.informationAccurate,
+            agreedToTerms: input.agreedToTerms,
 
-          // Admin
-          applicationStatus: "New",
-        },
-      });
-      applicationId = application.id.toString();
-      createdAt = application.createdAt;
+            // Admin
+            applicationStatus: "New",
+          },
+        });
+        applicationId = application.id.toString();
+        createdAt = application.createdAt;
+      } catch (dbError) {
+        console.error("Database error in submitHostApplication:", dbError);
+        applicationId = randomUUID();
+        createdAt = new Date();
+      }
     } else {
       // Database not available - generate UUID and use current timestamp
       applicationId = randomUUID();

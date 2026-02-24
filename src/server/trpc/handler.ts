@@ -19,9 +19,16 @@ function eventToWebRequest(event: any): Request | null {
       // If it's already a Request-like object, attempt to use it directly
       if (typeof Request !== "undefined" && nodeReq instanceof Request) return nodeReq;
 
-      const proto = nodeReq.headers?.["x-forwarded-proto"] || (nodeReq.protocol ? nodeReq.protocol.replace(':','') : "http");
+      const proto = nodeReq.headers?.["x-forwarded-proto"] || (nodeReq.protocol ? String(nodeReq.protocol).replace(':','') : "http");
       const host = nodeReq.headers?.host || nodeReq.hostname || "localhost";
-      const path = nodeReq.url || nodeReq.originalUrl || "/";
+      let path = nodeReq.url || nodeReq.originalUrl || "/";
+      
+      // Ensure path includes the tRPC endpoint prefix so fetchRequestHandler can parse it correctly
+      const endpoint = "/trpc";
+      if (!path.startsWith(endpoint)) {
+        path = endpoint + (path.startsWith('/') ? '' : '/') + path;
+      }
+      
       const url = `${proto}://${host}${path}`;
 
       const headers = new Headers();
@@ -33,18 +40,50 @@ function eventToWebRequest(event: any): Request | null {
       });
 
       const method = nodeReq.method || "GET";
-      // If nodeReq is a stream (IncomingMessage), pass it as body; otherwise, undefined
-      const body = method === "GET" || method === "HEAD" ? undefined : (nodeReq.body ?? nodeReq);
+      
+      let body: any = undefined;
+      if (method !== "GET" && method !== "HEAD") {
+        if (nodeReq.body !== undefined && nodeReq.body !== null) {
+          if (typeof nodeReq.body === "string" || nodeReq.body instanceof Buffer || nodeReq.body instanceof Uint8Array) {
+            body = nodeReq.body;
+          } else if (typeof nodeReq.body === "object") {
+            body = JSON.stringify(nodeReq.body);
+          } else {
+            body = nodeReq.body;
+          }
+        } else {
+          // If no parsed body, use the nodeReq stream
+          body = nodeReq;
+        }
+      }
 
-      return new Request(url, { method, headers, body });
+      // undici requires `duplex: 'half'` when passing a body stream
+      const init: RequestInit = { method, headers, body } as any;
+      if (body && (typeof body.on === 'function' || typeof body.getReader === 'function')) {
+        (init as any).duplex = "half";
+      }
+
+      return new Request(url, init);
     }
 
     // Fallback: if event has method and url
     if (event && event.method && event.url) {
       const headers = new Headers(event.headers as any || {});
       const method = event.method;
-      const body = method === "GET" || method === "HEAD" ? undefined : event.body;
-      return new Request(event.url, { method, headers, body });
+      let body = method === "GET" || method === "HEAD" ? undefined : event.body;
+      
+      if (body !== undefined && body !== null) {
+        if (typeof body === "object" && !(body instanceof Buffer) && !(body instanceof Uint8Array)) {
+          body = JSON.stringify(body);
+        }
+      }
+
+      const init: RequestInit = { method, headers, body } as any;
+      if (body && (typeof body.on === 'function' || typeof body.getReader === 'function')) {
+        (init as any).duplex = "half";
+      }
+      
+      return new Request(event.url, init);
     }
 
     return null;

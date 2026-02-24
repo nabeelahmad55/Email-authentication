@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { db } from "~/server/db";
+import { env } from "~/server/env";
 import { baseProcedure } from "~/server/trpc/main";
 import { submitAmbassadorApplicationToAirtable } from "~/server/airtable";
 import { sendAmbassadorApplicationThankYouEmail } from "~/server/email";
@@ -18,19 +19,25 @@ export const submitAmbassadorApplication = baseProcedure
     let applicationId: string;
     let createdAt: Date;
 
-    if (db) {
-      // Database is available - use it
-      const application = await db.ambassadorApplication.create({
-        data: {
-          fullName: input.fullName,
-          email: input.email,
-          location: input.location,
-          experienceLevel: input.experienceLevel,
-          applicationStatus: "New",
-        },
-      });
-      applicationId = application.id.toString();
-      createdAt = application.createdAt;
+    if (env.DATABASE_URL) {
+      try {
+        // Database is available - use it
+        const application = await db.ambassadorApplication.create({
+          data: {
+            fullName: input.fullName,
+            email: input.email,
+            location: input.location,
+            experienceLevel: input.experienceLevel,
+            applicationStatus: "New",
+          },
+        });
+        applicationId = application.id.toString();
+        createdAt = application.createdAt;
+      } catch (dbError) {
+        console.error("Database error in submitAmbassadorApplication:", dbError);
+        applicationId = randomUUID();
+        createdAt = new Date();
+      }
     } else {
       // Database not available - generate UUID and use current timestamp
       applicationId = randomUUID();

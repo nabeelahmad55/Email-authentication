@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { db } from "~/server/db";
+import { env } from "~/server/env";
 import { baseProcedure } from "~/server/trpc/main";
 import { submitCreatorApplicationToAirtable } from "~/server/airtable";
 import { sendCreatorApplicationThankYouEmail } from "~/server/email";
@@ -37,34 +38,41 @@ export const submitCreatorApplication = baseProcedure
     let applicationId: string;
     let createdAt: Date;
 
-    if (db) {
-      // Database is available - use it
-      const application = await db.creatorApplication.create({
-        data: {
-          // PAGE 1 - Basic Creator Information
-          firstName: input.firstName,
-          lastName: input.lastName,
-          email: input.email,
-          age: input.age,
-          country: input.country,
-          primaryPlatform: input.primaryPlatform,
-          creatorType: input.creatorType,
+    if (env.DATABASE_URL) {
+      try {
+        // Database is configured - use it
+        const application = await db.creatorApplication.create({
+          data: {
+            // PAGE 1 - Basic Creator Information
+            firstName: input.firstName,
+            lastName: input.lastName,
+            email: input.email,
+            age: input.age,
+            country: input.country,
+            primaryPlatform: input.primaryPlatform,
+            creatorType: input.creatorType,
 
-          // PAGE 2 - Platform & Audience Snapshot
-          platformUsername: input.platformUsername,
-          averageViews: input.averageViews,
-          topAudienceLocation: input.topAudienceLocation,
-          topAudienceAgeRange: input.topAudienceAgeRange,
+            // PAGE 2 - Platform & Audience Snapshot
+            platformUsername: input.platformUsername,
+            averageViews: input.averageViews,
+            topAudienceLocation: input.topAudienceLocation,
+            topAudienceAgeRange: input.topAudienceAgeRange,
 
-          // PAGE 3 - Declaration
-          informationAccurate: input.informationAccurate,
+            // PAGE 3 - Declaration
+            informationAccurate: input.informationAccurate,
 
-          // Admin
-          applicationStatus: "New",
-        },
-      });
-      applicationId = application.id.toString();
-      createdAt = application.createdAt;
+            // Admin
+            applicationStatus: "New",
+          },
+        });
+        applicationId = application.id.toString();
+        createdAt = application.createdAt;
+      } catch (dbError) {
+        console.error("Database error in submitCreatorApplication:", dbError);
+        // Fallback to non-database mode if DB insert fails
+        applicationId = randomUUID();
+        createdAt = new Date();
+      }
     } else {
       // Database not available - generate UUID and use current timestamp
       applicationId = randomUUID();
