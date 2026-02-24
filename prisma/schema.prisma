@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model HostApplication {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  
+  // Step 1 - Business Information
+  businessOrPropertyName          String
+  propertyType                    String   // Hotel, Resort, Vacation rental, Boutique stay
+  propertyWebsiteOrListingLink    String
+  country                         String
+  
+  // Step 2 - Contact Information
+  contactEmail                    String
+  primaryContactFullName          String
+  phoneNumber                     String?  // Optional
+  primaryContactRole              String   // Owner, Manager, Marketing
+  primaryContactOtherRoleDescription String?  // Custom role when "Other" is selected
+  
+  // Step 3 - Property Details
+  numberOfRoomsOrUnits            Int?     // Optional
+  targetGuestType                 String?  // Optional
+  amenities                       Json     // Array of strings
+  peakSeasons                     String?  // Optional
+  
+  // Step 4 - Collaboration Goals
+  collaborationObjectives         String   // Free text or multi-select stored as text
+  additionalNotes                 String?  // Optional - what they want to tell us
+  previousCreatorExperience       Boolean
+  
+  // Confirmations
+  informationAccurate             Boolean
+  agreedToTerms                   Boolean
+  
+  // Admin
+  applicationStatus               String   @default("New")
+}
+
+model CreatorApplication {
+  id                              Int      @id @default(autoincrement())
+  createdAt                       DateTime @default(now())
+  
+  // PAGE 1 - Basic Creator Information
+  firstName                       String
+  lastName                        String
+  email                           String
+  age                             Int      // Minimum 18 enforced at form validation level
+  country                         String
+  primaryPlatform                 String   // Instagram, TikTok
+  creatorType                     String   // "Content Creator", "Influencer", "Photographer/Videographer", "UGC Creator"
+  
+  // PAGE 2 - Platform & Audience Snapshot (conditional based on platform)
+  platformUsername                String?  // Username without @ or links
+  averageViews                    String?  // e.g., "50000" (last 28-30 days)
+  topAudienceLocation             String?  // Country only
+  topAudienceAgeRange             String?  // "18-24", "25-34", "35-44", "45+"
+  
+  // PAGE 3 - Declaration
+  informationAccurate             Boolean
+  
+  // Admin
+  applicationStatus               String   @default("New")
+}
+
+model AmbassadorApplication {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  
+  fullName        String
+  email           String
+  location        String
+  experienceLevel String
+  
+  applicationStatus String @default("New")
+}
+
+model EmailSubscriber {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  email     String   @unique
+}
+
+model HostLead {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  email     String   @unique
+}
+
+model InitialApplicationSignup {
+  id                          Int      @id @default(autoincrement())
+  createdAt                   DateTime @default(now())
+  platform                    String   // "instagram", "youtube", or "tiktok"
+  username                    String   @default("unknown") // The handle without @ symbol
+  profileUrl                  String   @default("unknown") // Full profile URL
+  followerCount               String?  // Optional: follower/subscriber count if provided
+  profileImageUrl             String?  // Optional: profile image URL if scraped
+  contentCategoryIndicators   String?  // Optional: JSON string of detected content categories
+  applicationType             String   // "creator" or "host"
+}
