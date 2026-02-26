@@ -2,39 +2,88 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 //from email address for all outgoing emails - make sure to verify this in your Resend dashboard
-const FROM_EMAIL = 'onboarding@resend.dev';
+//const FROM_EMAIL = 'onboarding@resend.dev';
+const FROM_EMAIL = 'signup@thecontentconnect.com';
 
 export async function sendAmbassadorApplicationThankYouEmail(email: string, name: string): Promise<void> {
-  await resend.emails.send({
+  const response = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'Thank you for applying as an Ambassador',
-    html: `<p>Hi ${name},</p>
-      <p>Thank you for applying to become an Ambassador with Content Connect. Our team will review your application and get in touch soon. We appreciate your interest and look forward to collaborating!</p>
-      <p>Best regards,<br/>Content Connect Team</p>`
+    subject: 'You Are One Step Closer to Early Access 🎉',
+    html: `
+      <p>Hi ${name},</p>
+
+      <p>Thank you for applying to be part of our early access launch. We are genuinely excited to have you here at the very start of <strong>Content Connect</strong>.</p>
+
+      <p>We are currently reviewing all creator submissions and selecting a small group to join this first phase.</p>
+
+      <p>We are keeping it intentionally small while we shape and refine everything.</p>
+
+      <p>If you are selected, we will be in touch soon with next steps and everything you need to get started.</p>
+
+      <p>If you are not included in this initial round, it simply means we are rolling things out in stages and will be opening more spots as we grow.</p>
+
+      <p>We really appreciate you putting yourself forward. This is just the beginning.</p>
+
+      <p>Best regards,<br/>
+      Content Connect Team</p>
+    `
   });
+  console.log('Email send response for ambassador:', response);
 }
 // src/server/email.ts
 // Stub implementations for email sending functions
 
 export async function sendCreatorApplicationThankYouEmail(email: string, name: string): Promise<void> {
-  await resend.emails.send({
+  const responce = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'Thank you for applying as a Creator',
-    html: `<p>Hi ${name},</p>
-      <p>Thank you for applying to join Content Connect as a Creator. Our team will review your application and reach out soon. We appreciate your creativity and look forward to working together!</p>
-      <p>Best regards,<br/>Content Connect Team</p>`
+    subject: 'You Are One Step Closer to Early Access 🎉',
+    html: `
+      <p>Hi ${name},</p>
+
+      <p>Thank you for applying to be part of our early access launch. We are genuinely excited to have you here at the very start of <strong>Content Connect</strong>.</p>
+
+      <p>We are currently reviewing all creator submissions and selecting a small group to join this first phase.</p>
+
+      <p>We are keeping it intentionally small while we shape and refine everything.</p>
+
+      <p>If you are selected, we will be in touch soon with next steps and everything you need to get started.</p>
+
+      <p>If you are not included in this initial round, it simply means we are rolling things out in stages and will be opening more spots as we grow.</p>
+
+      <p>We really appreciate you putting yourself forward. This is just the beginning.</p>
+
+      <p>Best regards,<br/>
+      Content Connect Team</p>
+    `
   });
+  console.log('Email send response for creator:', responce);
 }
 
 export async function sendHostApplicationThankYouEmail(email: string, name: string): Promise<void> {
-  await resend.emails.send({
+  const response = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'Thank you for applying as a Host',
-    html: `<p>Hi ${name},</p>
-      <p>Thank you for applying to partner with Content Connect as a Host. Our team will review your application and contact you soon. We appreciate your interest and look forward to a successful collaboration!</p>
-      <p>Best regards,<br/>Content Connect Team</p>`
+    subject: 'You Are One Step Closer to Early Access 🎉',
+    html: `
+      <p>Hi ${name},</p>
+
+      <p>Thank you for applying to be part of our early access launch. We are genuinely excited to have you here at the very start of <strong>Content Connect</strong>.</p>
+
+      <p>We are currently reviewing all creator submissions and selecting a small group to join this first phase.</p>
+
+      <p>We are keeping it intentionally small while we shape and refine everything.</p>
+
+      <p>If you are selected, we will be in touch soon with next steps and everything you need to get started.</p>
+
+      <p>If you are not included in this initial round, it simply means we are rolling things out in stages and will be opening more spots as we grow.</p>
+
+      <p>We really appreciate you putting yourself forward. This is just the beginning.</p>
+
+      <p>Best regards,<br/>
+      Content Connect Team</p>
+    `
   });
+  console.log('Email send response for host:', response);
 }
