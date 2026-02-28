@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 //from email address for all outgoing emails - make sure to verify this in your Resend dashboard
 //const FROM_EMAIL = 'onboarding@resend.dev';
+// have implemented resend third party mail system
 const FROM_EMAIL = 'signup@thecontentconnect.com';
 
 export async function sendAmbassadorApplicationThankYouEmail(email: string, name: string): Promise<void> {
