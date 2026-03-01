@@ -5,7 +5,7 @@ async function setup() {
 
 setup()
   .then(() => {
-    console.log("setup.ts complete");
+    //console.log("setup.ts complete");
     process.exit(0);
   })
   .catch((error) => {

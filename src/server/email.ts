@@ -30,7 +30,7 @@ export async function sendAmbassadorApplicationThankYouEmail(email: string, name
       Content Connect Team</p>
     `
   });
-  console.log('Email send response for ambassador:', response);
+  //console.log('Email send response for ambassador:', response);
 }
 // src/server/email.ts
 // Stub implementations for email sending functions

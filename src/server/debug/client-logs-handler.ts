@@ -36,7 +36,7 @@ function eventToWebRequest(event: any): Request | null {
       });
 
       const method = nodeReq.method || "GET";
-      
+
       let body: any = undefined;
       if (method !== "GET" && method !== "HEAD") {
         if (nodeReq.body !== undefined && nodeReq.body !== null) {
@@ -66,7 +66,7 @@ function eventToWebRequest(event: any): Request | null {
       const headers = new Headers(event.headers as any || {});
       const method = event.method;
       let body = method === "GET" || method === "HEAD" ? undefined : event.body;
-      
+
       if (body && typeof body === 'object' && !(body instanceof Buffer) && !(body instanceof Uint8Array)) {
         body = JSON.stringify(body);
       }
@@ -117,8 +117,8 @@ export default async function (event: any) {
         console.error("[client-logs-handler] Failed to parse JSON body. Body length:", bodyText.length);
         console.error("[client-logs-handler] First 100 chars of body:", bodyText.substring(0, 100));
         console.error("[client-logs-handler] Parse error:", parseErr);
-        return new Response(JSON.stringify({ 
-          error: "Invalid JSON", 
+        return new Response(JSON.stringify({
+          error: "Invalid JSON",
           details: parseErr instanceof Error ? parseErr.message : String(parseErr),
           receivedLength: bodyText.length
         }), {
