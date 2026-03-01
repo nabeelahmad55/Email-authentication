@@ -56,6 +56,7 @@ const ageRangeOptions = [
 export function CreatorApplicationForm({ backLinkElement, logoElement }: CreatorApplicationFormProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [referralCode, setReferralCode] = useState("");
   const trpc = useTRPC();
   
   const clearSignupData = useApplicationSignupStore((state) => state.clearSignupData);
@@ -221,6 +222,19 @@ export function CreatorApplicationForm({ backLinkElement, logoElement }: Creator
               {errors.email && (
                 <p className="mt-1.5 text-sm text-terracotta">{errors.email.message}</p>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-charcoal mb-2">
+                Referral Code (Optional)
+              </label>
+              <input
+                type="text"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                className="w-full h-12 max-w-md rounded-lg border-stone-grey focus:border-btn-primary focus:ring-btn-primary placeholder:text-slate/60"
+                placeholder="Enter referral code"
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

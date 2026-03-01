@@ -94,6 +94,7 @@ const amenitiesOptions = [
 export function HostApplicationForm({ backLinkElement, logoElement }: HostApplicationFormProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [referralCode, setReferralCode] = useState("");
   const totalSteps = 5;
   const trpc = useTRPC();
   
@@ -298,6 +299,19 @@ export function HostApplicationForm({ backLinkElement, logoElement }: HostApplic
                   {errors.propertyWebsiteOrListingLink.message}
                 </p>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate mb-2">
+                Referral Code (Optional)
+              </label>
+              <input
+                type="text"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                className="w-full h-12 rounded-lg border-stone-grey focus:border-btn-primary focus:ring-btn-primary placeholder:text-slate/60"
+                placeholder="Enter referral code"
+              />
             </div>
 
             <button

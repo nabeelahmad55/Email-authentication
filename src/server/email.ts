@@ -66,7 +66,8 @@ export async function sendHostApplicationThankYouEmail(email: string, name: stri
   const response = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'You’re One Step Closer to Becoming a Founding Partner',
+    subject: 'You\u2019re One Step Closer to Becoming a Founding Partner',
+    replyTo: FROM_EMAIL,
     html: `
       <p>Hi ${name},</p>
 
@@ -84,7 +85,23 @@ export async function sendHostApplicationThankYouEmail(email: string, name: stri
 
       <p>Best regards,<br/>
       Content Connect</p>
-    `
+    `,
+    text: `Hi ${name},
+
+Thank you for your interest in joining our early access launch. We are genuinely excited to welcome you to the pre-launch of Content Connect.
+
+We are currently reviewing all hotel applications and selecting a small number of founding partners for this first phase.
+
+We are intentionally keeping this group limited as we refine the platform and collaboration process to ensure everything delivers strong, consistent value from the outset.
+
+All hotels who apply and join during this early access period will receive our founding partner pricing upon full launch, should you choose to continue beyond the initial phase.
+
+We truly appreciate your interest in being part of this from the ground up. This is just the beginning.
+
+We will be in contact via email with updates about launch day!
+
+Best regards,
+Content Connect`
   });
   console.log('Email send response for host:', response);
 }

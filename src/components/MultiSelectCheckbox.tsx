@@ -64,7 +64,7 @@ export function MultiSelectCheckbox({
       <Listbox value={value} onChange={() => {}} multiple>
         {({ open }) => (
           <div className="relative">
-            <Listbox.Button className="relative w-full h-12 rounded-lg border border-warm-300 bg-white px-3 text-left focus:border-sage-500 focus:outline-none focus:ring-1 focus:ring-sage-500">
+            <Listbox.Button className="relative w-full h-12 rounded-lg border border-warm-300 bg-white px-3 pr-16 text-left focus:border-sage-500 focus:outline-none focus:ring-1 focus:ring-sage-500">
               <span
                 className={`block truncate ${
                   value.length === 0 ? "text-warm-400" : "text-warm-700"
@@ -73,15 +73,6 @@ export function MultiSelectCheckbox({
                 {displayText}
               </span>
               <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                {value.length > 0 ? (
-                  <button
-                    type="button"
-                    onClick={handleClearAll}
-                    className="pointer-events-auto rounded p-1 hover:bg-warm-100 mr-1"
-                  >
-                    <X className="h-4 w-4 text-warm-500" />
-                  </button>
-                ) : null}
                 <ChevronDown
                   className={`h-5 w-5 text-warm-400 transition-transform ${
                     open ? "rotate-180" : ""
@@ -89,6 +80,20 @@ export function MultiSelectCheckbox({
                 />
               </span>
             </Listbox.Button>
+            {value.length > 0 ? (
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onClick={handleClearAll}
+                className="absolute inset-y-0 right-8 my-auto h-7 w-7 rounded p-1 hover:bg-warm-100"
+                aria-label="Clear all selected options"
+              >
+                <X className="h-4 w-4 text-warm-500" />
+              </button>
+            ) : null}
 
             <Transition
               as={Fragment}
