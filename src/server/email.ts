@@ -1,12 +1,11 @@
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-//from email address for all outgoing emails - make sure to verify this in your Resend dashboard
-//const FROM_EMAIL = 'onboarding@resend.dev';
-// have implemented resend third party mail system
+// Verified sender identity used for all transactional emails.
 const FROM_EMAIL = 'signup@thecontentconnect.com';
 
 export async function sendAmbassadorApplicationThankYouEmail(email: string, name: string): Promise<void> {
+  // Sends the post-submit acknowledgement to ambassador applicants.
   const response = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
@@ -32,10 +31,9 @@ export async function sendAmbassadorApplicationThankYouEmail(email: string, name
   });
   //console.log('Email send response for ambassador:', response);
 }
-// src/server/email.ts
-// Stub implementations for email sending functions
 
 export async function sendCreatorApplicationThankYouEmail(email: string, name: string): Promise<void> {
+  // Sends the post-submit acknowledgement to creator applicants.
   const responce = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
@@ -63,6 +61,7 @@ export async function sendCreatorApplicationThankYouEmail(email: string, name: s
 }
 
 export async function sendHostApplicationThankYouEmail(email: string, name: string): Promise<void> {
+  // Sends the post-submit acknowledgement to host applicants.
   const response = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,

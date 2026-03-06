@@ -18,7 +18,7 @@ export const subscribeEmail = baseProcedure
     
     if (env.DATABASE_URL) {
       try {
-        // Database is available - check for duplicates and use it
+        // Enforce uniqueness before insert so the client gets a friendly conflict error.
         const existingSubscriber = await db.emailSubscriber.findUnique({
           where: {
             email: input.email,
@@ -55,7 +55,7 @@ export const subscribeEmail = baseProcedure
 
     console.log(`New email subscription: ${input.email}`);
 
-    // Sync to Airtable (fire and forget)
+    // Mirror to Airtable asynchronously; DB/API success should not depend on Airtable availability.
     submitEmailSubscriberToAirtable({
       subscriberId: subscriberId,
       email: input.email,
