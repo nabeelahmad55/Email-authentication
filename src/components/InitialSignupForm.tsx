@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { useTRPC } from "~/trpc/react";
 import toast from "react-hot-toast";
 import { Instagram, Music } from "lucide-react";
@@ -107,8 +108,13 @@ export function InitialSignupForm({ applicationType, onSignupComplete }: Initial
 
         <p className="text-xs text-center text-slate leading-relaxed pt-4">
           Your profile must be public for review. By continuing, you agree to our{" "}
-          <span className="text-ocean-blue font-medium">Terms of Service</span> and{" "}
-          <span className="text-ocean-blue font-medium">Privacy Policy</span>
+          <Link to="/terms" className="text-ocean-blue font-medium hover:underline">
+            Terms and Conditions
+          </Link>{" "}
+          and{" "}
+          <Link to="/privacy" className="text-ocean-blue font-medium hover:underline">
+            Privacy Policy
+          </Link>
         </p>
       </div>
     );

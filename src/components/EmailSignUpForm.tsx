@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { Mail } from "lucide-react";
 import { useTRPC } from "~/trpc/react";
 import { useMutation } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 
 const emailSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -82,6 +83,17 @@ export function EmailSignUpForm() {
             </button>
           </div>
         </form>
+        <p className="mt-4 text-xs text-slate">
+          By subscribing, you agree to our{" "}
+          <Link to="/terms" className="text-ocean-blue font-medium hover:underline">
+            Terms and Conditions
+          </Link>{" "}
+          and{" "}
+          <Link to="/privacy" className="text-ocean-blue font-medium hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
     </section>
   );
