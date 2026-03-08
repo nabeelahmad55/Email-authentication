@@ -37,6 +37,9 @@ const creatorFormSchema = z.object({
   informationAccurate: z.boolean().refine((val) => val === true, {
     message: "You must confirm your information is accurate",
   }),
+  agreedToTerms: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the Terms & Privacy Policy",
+  }),
 });
 
 type CreatorFormData = z.infer<typeof creatorFormSchema>;
@@ -84,6 +87,7 @@ export function CreatorApplicationForm({ backLinkElement, logoElement }: Creator
       topAudienceLocation: "",
       topAudienceAgeRange: undefined,
       informationAccurate: false,
+      agreedToTerms: false,
     },
   });
 
@@ -554,6 +558,37 @@ export function CreatorApplicationForm({ backLinkElement, logoElement }: Creator
               {errors.informationAccurate && (
                 <p className="text-sm text-terracotta ml-8">
                   {errors.informationAccurate.message}
+                </p>
+              )}
+
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  {...register("agreedToTerms")}
+                  className="mt-0.5 rounded border-stone-grey text-btn-primary focus:ring-btn-primary focus:ring-offset-0"
+                />
+                <span className="text-sm text-charcoal leading-relaxed">
+                  I agree to the{" "}
+                  <Link
+                    to="/terms"
+                    className="text-ocean-blue font-medium hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Terms
+                  </Link>{" "}
+                  &{" "}
+                  <Link
+                    to="/privacy"
+                    className="text-ocean-blue font-medium hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Privacy Policy
+                  </Link>
+                </span>
+              </label>
+              {errors.agreedToTerms && (
+                <p className="text-sm text-terracotta ml-8">
+                  {errors.agreedToTerms.message}
                 </p>
               )}
             </div>

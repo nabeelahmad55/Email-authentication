@@ -712,7 +712,21 @@ export function HostApplicationForm({ backLinkElement, logoElement }: HostApplic
                 />
                 <span className="text-sm text-slate leading-relaxed">
                   I agree to the{" "}
-                  <span className="text-ocean-blue font-medium">Terms & Privacy Policy</span>
+                  <Link
+                    to="/terms"
+                    className="text-ocean-blue font-medium hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Terms
+                  </Link>{" "}
+                  &{" "}
+                  <Link
+                    to="/privacy"
+                    className="text-ocean-blue font-medium hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Privacy Policy
+                  </Link>
                 </span>
               </label>
               {errors.agreedToTerms && (
